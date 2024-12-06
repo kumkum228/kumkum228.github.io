@@ -1,0 +1,17 @@
+body {
+    background-color: black;
+    text-align: center;
+}
+#bulb {
+    display: none;
+}
+#demo {
+    display: none;
+}
+h1 {
+    color: red;
+}
+#celebrate {
+    width: 235px;
+    height: 235px;
+}
