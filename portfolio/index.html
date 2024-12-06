@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home">
+        <div class="intro">
+            <h1>Hello, I'm Kumkum Kumari!!</h1>
+            <p> 😍 Welcome to my portfolio!! 😍 </p><br>
+            <a href="img/woman.png"><img src="img/woman.png" width="250px"></a>
+        </div>
+    </section>
+
+    <section id="about">
+        <h2> 👤 About Me </h2>
+        <p>I’m a front-end web developer with a passion for crafting seamless user interfaces using HTML, CSS, and JavaScript. I love creating elegant solutions for complex problems. 
+            I build responsive, mobile-friendly websites with clean, maintainable code. I love transforming designs into interactive experiences, using CSS for desgin and presentation and JavaScript for dynamic features.
+
+        </p>
+    </section>
+
+    <section id="portfolio">
+        <h2> ✉️ Portfolio</h2>
+        <p>Check out my latest projects or get in touch to discuss how I can help bring ideas to life.</p><br>
+        <div class="projects">
+            <div class="project-card">
+                <a href="Projects/1. My_Profile/index.html">
+                    <h3>Project 1: User Profile Card</h3>
+                </a>
+                <p> Profile card allows users to quickly connect with the individual across multiple social networks. </p>
+            </div>
+            <div class="project-card">
+                <a href="Projects/2. Short_Stories/index.html">
+                    <h3>Project 2: Short Stories </h3>
+                </a>
+                <p> A Collection of Short Stories to Inspire and Entertain. </p>
+            </div>
+            <div class="project-card">
+                <a href="Projects/3. Bhaidooj/index.html">
+                    <h3>Project 3: Bhaidooj Wish</h3>
+                </a>
+                <p>The story behind Bhai Dooj, a Hindu festival that celebrates the bond between brothers and sisters. </p>
+            </div>         
+        </div>
+
+        <div class="projects">
+            <div class="project-card">
+                <a href="Projects/4. Birth-Day/index.html">
+                    <h3>Project 4: Birthday Card</h3>
+                </a>
+                <p>
+                    A digital birthday card is the perfect way to let them know you're sending your well wishes for a fantastic year ahead.
+                </p>
+            </div>
+            <div class="project-card">
+                <a href="Projects/5. City_SkyLine/index.html">
+                    <h3>Project 5: City Skyline</h3>
+                </a>
+                <p>
+                    Skylines is a modern take on the classic city simulation.
+                </p>
+            </div>
+            <div class="project-card">
+                <a href="Projects/6. Penguin/index.html">
+                    <h3>Project 6: Penguin</h3>
+                </a>
+                <p>
+                    A penguin is a flightless bird from the Southern Hemisphere.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h2> 📧 Contact Me</h2>
+        <form id="contact-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter Name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="Enter Email" required>
+
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" placeholder="Enter message" required></textarea>
+
+            <button type="submit">Send</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 - Kumkum Kumari. All Rights Reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
