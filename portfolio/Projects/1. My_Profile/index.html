@@ -69,8 +69,11 @@
                     </span>
                       
                     <footer>
-                            <p> &copy; 2025 - Kumkum Kumari. All Rights Reserved.</p>
+                        <p>&copy; <span id="year"></span> - Kumkum. All Rights Reserved.</p>
                     </footer>
+                    <script>
+                        document.getElementById("year").textContent = new Date().getFullYear();
+                    </script>
             </div>
             
     </body>

@@ -3,3 +3,5 @@ document.getElementById('contact-form').addEventListener('submit', function(even
     event.preventDefault();
     alert('Thank you for contacting me!');
 });
+
+document.getElementById("year").textContent = new Date().getFullYear();
