@@ -1,0 +1,15 @@
+# StyleGenie backend dependencies
+# Install with:  pip install -r requirements.txt
+
+fastapi==0.115.0            # Web framework for building the REST API
+uvicorn[standard]==0.30.6  # ASGI server that runs the FastAPI app
+SQLAlchemy==2.0.34         # ORM used to talk to MySQL
+PyMySQL==1.1.1             # MySQL driver used by SQLAlchemy
+python-dotenv==1.0.1       # Loads variables from the .env file
+pydantic==2.9.2            # Data validation / request+response schemas
+pydantic-settings==2.5.2   # Reads typed settings from environment variables
+passlib[bcrypt]==1.7.4     # Secure password hashing (bcrypt)
+python-jose[cryptography]==3.3.0  # Creating and verifying JWT tokens
+python-multipart==0.0.9    # Needed for form data / login endpoints
+google-generativeai==0.8.3 # Google Gemini API client (used in Phase 10+)
+email-validator==2.2.0     # Validates email fields in Pydantic schemas
