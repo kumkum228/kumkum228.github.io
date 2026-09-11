@@ -1,0 +1,826 @@
+<title>Trivia Quiz Game</title>
+<meta name="description" content="A browser trivia quiz with scoring, a 50:50 lifeline, and a saved leaderboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap">
+<style>
+  /* ---------- Design tokens: light palette on bare :root ---------- */
+  :root {
+    --bg:        #f1edfb;   /* violet-biased off-white ground */
+    --surface:   #ffffff;   /* the quiz card */
+    --surface-2: #f6f2ff;   /* insets, option buttons at rest */
+    --ink:       #241a45;   /* primary text */
+    --muted:     #6b6088;   /* secondary text */
+    --line:      #e4dcf7;   /* hairlines */
+    --accent:    #6d3bf5;   /* violet — the brand */
+    --accent-ink:#ffffff;
+    --gold:      #e8a317;   /* lifeline / highlight */
+    --good:      #16a06a;   /* correct */
+    --good-bg:   #e2f7ee;
+    --bad:       #d63b57;   /* wrong */
+    --bad-bg:    #fde7ec;
+    --shadow:    0 18px 50px -24px rgba(60, 30, 120, .45);
+    color-scheme: light;
+  }
+  /* Dark palette for the default (unstamped) "system" state ... */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:        #150f2e;
+      --surface:   #211a40;
+      --surface-2: #2b2350;
+      --ink:       #f0ebff;
+      --muted:     #b3a8d6;
+      --line:      #362c5e;
+      --accent:    #b79bff;
+      --accent-ink:#1a1236;
+      --gold:      #ffcb5e;
+      --good:      #45d69f;
+      --good-bg:   #123a2c;
+      --bad:       #ff85a0;
+      --bad-bg:    #3d1826;
+      --shadow:    0 18px 50px -24px rgba(0, 0, 0, .7);
+      color-scheme: dark;
+    }
+  }
+  /* ... and again for an explicit dark toggle so it wins both ways. */
+  :root[data-theme="dark"] {
+    --bg:        #150f2e;
+    --surface:   #211a40;
+    --surface-2: #2b2350;
+    --ink:       #f0ebff;
+    --muted:     #b3a8d6;
+    --line:      #362c5e;
+    --accent:    #b79bff;
+    --accent-ink:#1a1236;
+    --gold:      #ffcb5e;
+    --good:      #45d69f;
+    --good-bg:   #123a2c;
+    --bad:       #ff85a0;
+    --bad-bg:    #3d1826;
+    --shadow:    0 18px 50px -24px rgba(0, 0, 0, .7);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Nunito", system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    gap: 16px;
+    line-height: 1.5;
+  }
+
+  /* Soft decorative glow behind the card — set on body via pseudo-element */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(40% 40% at 15% 10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+      radial-gradient(45% 45% at 90% 90%, color-mix(in srgb, var(--gold) 18%, transparent), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .stage {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    padding: 30px 28px 32px;
+  }
+
+  h1, h2 {
+    font-family: "Baloo 2", "Nunito", sans-serif;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 { font-size: 2rem; font-weight: 800; letter-spacing: -.01em; }
+  h2 { font-size: 1.4rem; font-weight: 700; }
+
+  .brandmark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    width: 46px; height: 46px;
+    flex: none;
+    display: grid; place-items: center;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-radius: 14px;
+    font-size: 1.5rem;
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  .tagline {
+    color: var(--muted);
+    margin: 4px 0 26px;
+    font-size: 1rem;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-size: .72rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    font-family: "Nunito", sans-serif;
+    font-size: 1.02rem;
+    font-weight: 800;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: transform .06s ease, background .15s ease, border-color .15s ease, color .15s ease;
+    text-align: left;
+    width: 100%;
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .btn--primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    text-align: center;
+  }
+  .btn--ghost {
+    background: transparent;
+    border-color: var(--line);
+    text-align: center;
+  }
+  .btn--gold {
+    background: color-mix(in srgb, var(--gold) 18%, var(--surface));
+    color: var(--ink);
+    border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+    text-align: center;
+    font-size: .95rem;
+    padding: 11px 16px;
+  }
+  .btn--gold:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .menu { display: flex; flex-direction: column; gap: 12px; }
+  .menu .btn { position: relative; padding-left: 54px; }
+  .menu .btn .ico {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    font-size: 1.2rem;
+  }
+
+  /* ---------- Quiz screen ---------- */
+  .quiz-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 13px;
+    font-weight: 700;
+    font-size: .85rem;
+    color: var(--muted);
+  }
+  .chip b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .progress {
+    height: 8px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 22px;
+  }
+  .progress > i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 999px;
+    transition: width .35s ease;
+  }
+
+  .q-category {
+    margin-bottom: 6px;
+  }
+  .q-text {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 1.32rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 4px 0 20px;
+    text-wrap: balance;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 11px; }
+  .options .btn {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+  }
+  .options .key {
+    flex: none;
+    width: 30px; height: 30px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--accent);
+  }
+  /* Answer feedback states */
+  .btn.correct {
+    background: var(--good-bg);
+    border-color: var(--good);
+    color: var(--good);
+  }
+  .btn.correct .key { background: var(--good); color: #fff; border-color: var(--good); }
+  .btn.wrong {
+    background: var(--bad-bg);
+    border-color: var(--bad);
+    color: var(--bad);
+  }
+  .btn.wrong .key { background: var(--bad); color: #fff; border-color: var(--bad); }
+  .btn.faded { opacity: .32; }
+  .btn:disabled { cursor: default; }
+  .btn:disabled:hover { transform: none; }
+
+  .lifeline-row { margin-top: 18px; }
+
+  .feedback {
+    margin-top: 16px;
+    font-weight: 800;
+    font-size: 1rem;
+    min-height: 1.4em;
+  }
+  .feedback.good { color: var(--good); }
+  .feedback.bad  { color: var(--bad); }
+
+  /* ---------- Result ---------- */
+  .result { text-align: center; }
+  .score-ring {
+    width: 150px; height: 150px;
+    margin: 6px auto 18px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background:
+      conic-gradient(var(--accent) var(--pct, 0%), var(--surface-2) 0);
+    position: relative;
+  }
+  .score-ring::after {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    background: var(--surface);
+  }
+  .score-ring .num {
+    position: relative;
+    z-index: 1;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 2.6rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-ring .num small {
+    display: block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .verdict { font-family: "Baloo 2", sans-serif; font-size: 1.35rem; font-weight: 700; margin-bottom: 6px; }
+  .result .sub { color: var(--muted); margin-bottom: 22px; }
+
+  /* ---------- Name field ---------- */
+  .field { margin: 18px 0 8px; text-align: left; }
+  .field label {
+    display: block;
+    font-weight: 800;
+    font-size: .82rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+  .field input {
+    width: 100%;
+    font-family: "Nunito", sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+  .field input:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+
+  .row { display: flex; gap: 11px; margin-top: 18px; }
+  .row .btn { flex: 1; }
+
+  /* ---------- Leaderboard ---------- */
+  .board { display: flex; flex-direction: column; gap: 8px; margin: 18px 0 8px; }
+  .board .entry {
+    display: grid;
+    grid-template-columns: 34px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .board .entry .rank {
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    color: var(--muted);
+    text-align: center;
+  }
+  .board .entry.top1 { border-color: color-mix(in srgb, var(--gold) 60%, transparent); background: color-mix(in srgb, var(--gold) 12%, var(--surface)); }
+  .board .entry.top1 .rank { color: var(--gold); }
+  .board .entry .pname { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .board .entry .pts { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); text-align: center; padding: 24px 0; }
+
+  /* ---------- Rules ---------- */
+  .rules { display: flex; flex-direction: column; gap: 14px; margin: 16px 0 6px; }
+  .rules .rule {
+    display: flex; gap: 13px; align-items: flex-start;
+  }
+  .rules .rule .b {
+    flex: none;
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    border-radius: 10px;
+    background: var(--surface-2);
+    font-size: 1.1rem;
+  }
+  .rules .rule p { margin: 0; }
+  .rules .rule strong { display: block; }
+  .rules .rule span { color: var(--muted); font-size: .95rem; }
+
+  /* Theme toggle floats top-right of the stage */
+  .toolbar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 10px;
+    width: 40px; height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  .icon-btn:hover { color: var(--ink); }
+  .icon-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .footnote {
+    position: relative;
+    z-index: 1;
+    color: var(--muted);
+    font-size: .82rem;
+    text-align: center;
+  }
+
+  @keyframes pop { from { transform: scale(.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .screen { animation: pop .28s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .screen { animation: none; }
+    .progress > i, .btn { transition: none; }
+  }
+
+  @media (max-width: 440px) {
+    .card { padding: 24px 18px 26px; }
+    h1 { font-size: 1.7rem; }
+    .q-text { font-size: 1.18rem; }
+  }
+</style>
+
+<div class="stage">
+  <div class="toolbar">
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle light or dark theme">◐</button>
+  </div>
+
+  <div class="card">
+
+    <!-- ============ MENU SCREEN ============ -->
+    <section class="screen" id="screen-menu">
+      <div class="brandmark">
+        <div class="logo" aria-hidden="true">🧠</div>
+        <div>
+          <div class="eyebrow">Glasgow Clyde College</div>
+          <h1>Trivia Quiz Game</h1>
+        </div>
+      </div>
+      <p class="tagline">Six questions, two categories, one 50:50 lifeline. Beat the leaderboard!</p>
+
+      <div class="menu">
+        <button class="btn" type="button" data-go="play"><span class="ico">▶️</span>Play Game</button>
+        <button class="btn" type="button" data-go="rules"><span class="ico">📜</span>Rules</button>
+        <button class="btn" type="button" data-go="board"><span class="ico">🏆</span>Leaderboard</button>
+      </div>
+    </section>
+
+    <!-- ============ RULES SCREEN ============ -->
+    <section class="screen" id="screen-rules" hidden>
+      <span class="eyebrow">How it works</span>
+      <h2>Game Rules</h2>
+      <div class="rules">
+        <div class="rule"><div class="b" aria-hidden="true">🎯</div><p><strong>Pick an answer</strong><span>Every question has four options — tap the one you think is right.</span></p></div>
+        <div class="rule"><div class="b" aria-hidden="true">➕</div><p><strong>Scoring</strong><span>Correct answer <b>+10</b> points · Wrong answer <b>−5</b> points.</span></p></div>
+        <div class="rule"><div class="b" aria-hidden="true">✂️</div><p><strong>50:50 Lifeline</strong><span>Use it once per game to remove two wrong options.</span></p></div>
+        <div class="rule"><div class="b" aria-hidden="true">🏆</div><p><strong>Leaderboard</strong><span>Your final score is saved in this browser so you can beat it next time.</span></p></div>
+      </div>
+      <button class="btn btn--ghost" type="button" data-go="menu">← Back to menu</button>
+    </section>
+
+    <!-- ============ QUIZ SCREEN ============ -->
+    <section class="screen" id="screen-quiz" hidden>
+      <div class="quiz-top">
+        <span class="chip">Question <b id="qNow">1</b>/<b id="qTotal">6</b></span>
+        <span class="chip">Score <b id="scoreNow">0</b></span>
+      </div>
+      <div class="progress"><i id="progressBar"></i></div>
+
+      <div class="eyebrow q-category" id="qCategory">Python Basics</div>
+      <p class="q-text" id="qText">Question goes here</p>
+
+      <div class="options" id="options"><!-- option buttons injected here --></div>
+
+      <div class="lifeline-row">
+        <button class="btn btn--gold" id="lifelineBtn" type="button">✂️ Use 50:50 Lifeline</button>
+      </div>
+
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+    </section>
+
+    <!-- ============ RESULT SCREEN ============ -->
+    <section class="screen result" id="screen-result" hidden>
+      <span class="eyebrow">Quiz complete</span>
+      <div class="score-ring" id="scoreRing"><div class="num"><span id="finalScore">0</span><small>points</small></div></div>
+      <div class="verdict" id="verdict">Nice work!</div>
+      <p class="sub" id="resultSub">You answered 0 of 6 correctly.</p>
+
+      <div class="field">
+        <label for="playerName">Save your score as</label>
+        <input id="playerName" type="text" maxlength="18" placeholder="Your name" autocomplete="off">
+      </div>
+
+      <div class="row">
+        <button class="btn btn--primary" id="saveBtn" type="button">Save score</button>
+        <button class="btn btn--ghost" type="button" data-go="play">Play again</button>
+      </div>
+    </section>
+
+    <!-- ============ LEADERBOARD SCREEN ============ -->
+    <section class="screen" id="screen-board" hidden>
+      <span class="eyebrow">Top scores</span>
+      <h2>Leaderboard</h2>
+      <div class="board" id="boardList"></div>
+      <div class="row">
+        <button class="btn btn--primary" type="button" data-go="play">Play</button>
+        <button class="btn btn--ghost" type="button" data-go="menu">Menu</button>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="footnote">Made with basic web tech · A companion to the Python <code>quiz_game.py</code> project</p>
+</div>
+
+<script>
+  "use strict";
+
+  /* =====================================================================
+     THE QUESTION BANK  — same nested structure as the Python version.
+     An object of categories; each category is an array of question objects.
+     ===================================================================== */
+  const QUESTION_BANK = {
+    "Python Basics": [
+      { question: "Which keyword is used to create a function in Python?",
+        options: ["func", "def", "function", "define"], answer: "def" },
+      { question: "What data type is the value: True ?",
+        options: ["int", "str", "bool", "float"], answer: "bool" },
+      { question: "Which symbol starts a comment on a single line?",
+        options: ["//", "#", "/*", "--"], answer: "#" }
+    ],
+    "General Knowledge": [
+      { question: "What is the capital city of Scotland?",
+        options: ["Glasgow", "Edinburgh", "Aberdeen", "Dundee"], answer: "Edinburgh" },
+      { question: "How many days are there in a leap year?",
+        options: ["364", "365", "366", "367"], answer: "366" },
+      { question: "Which planet is known as the 'Red Planet'?",
+        options: ["Venus", "Jupiter", "Mars", "Saturn"], answer: "Mars" }
+    ]
+  };
+
+  const CORRECT_POINTS = 10;   // points for a right answer
+  const WRONG_POINTS   = -5;   // points for a wrong answer
+  const STORE_KEY      = "triviaQuizScores";  // localStorage key for the leaderboard
+
+  /* Flatten the nested bank into one ordered list of questions, each
+     tagged with its category — this is what we loop through during play. */
+  const QUESTIONS = [];
+  for (const category in QUESTION_BANK) {
+    for (const q of QUESTION_BANK[category]) {
+      QUESTIONS.push({ category, ...q });
+    }
+  }
+
+  /* ---------- Game state ---------- */
+  let current = 0;              // index of the question being shown
+  let score = 0;               // running score
+  let lifelineAvailable = true; // 50:50 can be used once
+  let answered = false;        // has the current question been answered?
+  let correctCount = 0;        // how many answered correctly (for the summary)
+
+  /* ---------- Handy element lookups ---------- */
+  const $ = (id) => document.getElementById(id);
+  const screens = {
+    menu:   $("screen-menu"),
+    rules:  $("screen-rules"),
+    quiz:   $("screen-quiz"),
+    result: $("screen-result"),
+    board:  $("screen-board"),
+  };
+
+  /* Show one screen, hide the rest. Also runs any per-screen setup. */
+  function show(name) {
+    for (const key in screens) screens[key].hidden = (key !== name);
+    if (name === "play") { startGame(); return; }
+    if (name === "board") renderBoard();
+  }
+
+  /* =====================================================================
+     PLAYING THE GAME
+     ===================================================================== */
+  function startGame() {
+    current = 0;
+    score = 0;
+    lifelineAvailable = true;
+    correctCount = 0;
+    screens.quiz.hidden = false;
+    for (const key in screens) if (key !== "quiz") screens[key].hidden = true;
+    $("qTotal").textContent = QUESTIONS.length;
+    renderQuestion();
+  }
+
+  /* Draw the current question, its options, and reset per-question UI. */
+  function renderQuestion() {
+    answered = false;
+    const q = QUESTIONS[current];
+
+    // Header: number, score, progress bar, category, question text.
+    $("qNow").textContent = current + 1;
+    $("scoreNow").textContent = score;
+    $("progressBar").style.width = (current / QUESTIONS.length * 100) + "%";
+    $("qCategory").textContent = q.category;
+    $("qText").textContent = q.question;
+    $("feedback").textContent = "";
+    $("feedback").className = "feedback";
+
+    // Lifeline button: enabled only if still available.
+    const lb = $("lifelineBtn");
+    lb.disabled = !lifelineAvailable;
+    lb.textContent = lifelineAvailable ? "✂️ Use 50:50 Lifeline" : "✂️ Lifeline used";
+
+    // Build one button per option.
+    const box = $("options");
+    box.innerHTML = "";
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn";
+      btn.innerHTML = `<span class="key">${"ABCD"[i]}</span><span>${opt}</span>`;
+      btn.addEventListener("click", () => choose(opt, btn));
+      box.appendChild(btn);
+    });
+  }
+
+  /* Handle a chosen answer: score it, reveal the correct one, then advance. */
+  function choose(chosen, btn) {
+    if (answered) return;         // ignore extra clicks
+    answered = true;
+    const q = QUESTIONS[current];
+    const buttons = $("options").querySelectorAll("button");
+
+    // Lock every option and mark correct / wrong.
+    buttons.forEach((b) => {
+      b.disabled = true;
+      const label = b.querySelector("span:last-child").textContent;
+      if (label === q.answer) b.classList.add("correct");
+    });
+
+    const fb = $("feedback");
+    if (chosen === q.answer) {
+      score += CORRECT_POINTS;
+      correctCount += 1;
+      fb.textContent = "✅ Correct!  +10 points";
+      fb.className = "feedback good";
+    } else {
+      score += WRONG_POINTS;
+      btn.classList.add("wrong");
+      fb.textContent = `❌ Wrong (−5).  The answer was "${q.answer}".`;
+      fb.className = "feedback bad";
+    }
+
+    $("scoreNow").textContent = score;
+    $("lifelineBtn").disabled = true;   // no lifeline after answering
+
+    // Pause so the player sees the result, then move on.
+    setTimeout(nextQuestion, 1150);
+  }
+
+  /* Advance to the next question, or finish the game. */
+  function nextQuestion() {
+    current += 1;
+    if (current < QUESTIONS.length) {
+      renderQuestion();
+    } else {
+      finishGame();
+    }
+  }
+
+  /* =====================================================================
+     THE 50:50 LIFELINE
+     Removes two of the wrong options, leaving the correct one plus one
+     wrong option. Can only be used once per game.
+     ===================================================================== */
+  function useLifeline() {
+    if (!lifelineAvailable || answered) return;
+    lifelineAvailable = false;
+    const q = QUESTIONS[current];
+
+    // Collect the indexes of the wrong options.
+    const buttons = [...$("options").querySelectorAll("button")];
+    const wrongButtons = buttons.filter(
+      (b) => b.querySelector("span:last-child").textContent !== q.answer
+    );
+
+    // Fade and disable two of the wrong options.
+    wrongButtons.slice(0, 2).forEach((b) => {
+      b.classList.add("faded");
+      b.disabled = true;
+    });
+
+    const lb = $("lifelineBtn");
+    lb.disabled = true;
+    lb.textContent = "✂️ Lifeline used";
+  }
+
+  /* =====================================================================
+     RESULT SCREEN
+     ===================================================================== */
+  function finishGame() {
+    $("progressBar").style.width = "100%";
+    for (const key in screens) screens[key].hidden = (key !== "result");
+
+    const maxScore = QUESTIONS.length * CORRECT_POINTS;
+    const pct = Math.max(0, Math.round(score / maxScore * 100));
+
+    $("finalScore").textContent = score;
+    $("scoreRing").style.setProperty("--pct", pct + "%");
+    $("resultSub").textContent =
+      `You answered ${correctCount} of ${QUESTIONS.length} correctly.`;
+
+    // A verdict message based on the score.
+    let verdict;
+    if (score >= 50)      verdict = "🏆 Trivia champion!";
+    else if (score >= 20) verdict = "🎉 Nice job!";
+    else if (score >= 0)  verdict = "🙂 Good effort — keep practising!";
+    else                  verdict = "💪 Don't give up — try again!";
+    $("verdict").textContent = verdict;
+
+    $("playerName").value = "";
+    $("saveBtn").disabled = false;
+    $("saveBtn").textContent = "Save score";
+    $("playerName").focus();
+  }
+
+  /* =====================================================================
+     LEADERBOARD  — stored in the browser with localStorage.
+     This replaces the Python version's scores.txt file.
+     ===================================================================== */
+  function loadScores() {
+    // Reading storage can fail (private mode); guard it with try/catch.
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveScore(name, value) {
+    const scores = loadScores();
+    scores.push({ name: name, score: value });
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(scores));
+    } catch (e) {
+      /* Storage unavailable — the score just won't persist. */
+    }
+  }
+
+  function renderBoard() {
+    const scores = loadScores();
+    // Sort highest first.
+    scores.sort((a, b) => b.score - a.score);
+
+    const list = $("boardList");
+    list.innerHTML = "";
+
+    if (scores.length === 0) {
+      list.innerHTML = `<p class="empty">No scores yet — be the first to set a record!</p>`;
+      return;
+    }
+
+    // Show up to the top 5.
+    scores.slice(0, 5).forEach((entry, i) => {
+      const row = document.createElement("div");
+      row.className = "entry" + (i === 0 ? " top1" : "");
+      const medal = ["🥇", "🥈", "🥉"][i] || (i + 1);
+      row.innerHTML =
+        `<span class="rank">${medal}</span>` +
+        `<span class="pname"></span>` +
+        `<span class="pts">${entry.score}</span>`;
+      // Set the name via textContent so player names can't inject HTML.
+      row.querySelector(".pname").textContent = entry.name;
+      list.appendChild(row);
+    });
+  }
+
+  /* =====================================================================
+     THEME TOGGLE  — flips between light and dark, remembers the choice.
+     ===================================================================== */
+  function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem("triviaTheme"); } catch (e) {}
+    if (saved) document.documentElement.setAttribute("data-theme", saved);
+
+    $("themeBtn").addEventListener("click", () => {
+      const root = document.documentElement;
+      // Work out what's showing now, then flip it.
+      const isDark = root.getAttribute("data-theme") === "dark" ||
+        (!root.hasAttribute("data-theme") &&
+         window.matchMedia("(prefers-color-scheme: dark)").matches);
+      const next = isDark ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("triviaTheme", next); } catch (e) {}
+    });
+  }
+
+  /* =====================================================================
+     WIRE UP THE BUTTONS
+     ===================================================================== */
+  // Any element with data-go="..." navigates to that screen.
+  document.querySelectorAll("[data-go]").forEach((el) => {
+    el.addEventListener("click", () => show(el.getAttribute("data-go")));
+  });
+
+  $("lifelineBtn").addEventListener("click", useLifeline);
+
+  $("saveBtn").addEventListener("click", () => {
+    let name = $("playerName").value.trim();
+    if (name === "") name = "Anonymous";
+    saveScore(name, score);
+    $("saveBtn").disabled = true;
+    $("saveBtn").textContent = "Saved ✓";
+    setTimeout(() => show("board"), 500);
+  });
+
+  initTheme();
+  show("menu");   // start on the main menu
+</script>
