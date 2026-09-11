@@ -10,22 +10,36 @@ This project intentionally uses ONLY basic Python:
     - functions (def)
     - lists
     - dictionaries (including nested dictionaries)
+    - basic File I/O (reading and writing a text file)
 
 It does NOT use: external libraries, classes (OOP), or GUI frameworks.
 
 Features:
-    1. A Main Menu (Play, Rules, Exit).
+    1. A Main Menu (Play, Rules, Leaderboard, Exit).
     2. A Question Bank built from nested dictionaries
        (2 categories, 6 questions total, 4 options each).
     3. A scoring system (+10 for a correct answer, -5 for a wrong one).
     4. A "50:50" lifeline that can be used ONCE per whole game to
        remove two of the wrong options.
-    5. Clean, readable console output using basic string formatting.
+    5. A High Score Leaderboard saved to a text file (scores.txt),
+       so scores are remembered between games.
+    6. Clean, readable console output using basic string formatting.
 
 Author: (your name)
 Course: Glasgow Clyde College - Python (Beginner)
 ======================================================================
 """
+
+
+# ----------------------------------------------------------------------
+# CONSTANTS
+# ----------------------------------------------------------------------
+# The name of the file where high scores are stored. Keeping it here as a
+# single variable means we only have to change it in one place if needed.
+SCORES_FILE = "scores.txt"
+
+# How many top scores to display on the leaderboard.
+TOP_SCORES_TO_SHOW = 5
 
 
 # ----------------------------------------------------------------------
@@ -104,6 +118,166 @@ def print_line(character="=", width=60):
 
 
 # ----------------------------------------------------------------------
+# FUNCTION: load saved scores from the text file
+# ----------------------------------------------------------------------
+def load_scores():
+    """
+    Read the high scores from the scores file and return them as a list.
+
+    Each line in the file is stored in the simple format:
+        name,score
+    for example:
+        Alice,45
+        Bob,20
+
+    Returns:
+        list: a list of small dictionaries, each like
+              {"name": "Alice", "score": 45}.
+              Returns an empty list if the file does not exist yet.
+
+    We wrap the file reading in try/except so the very first time the
+    game runs (when scores.txt does not exist) it does not crash.
+    """
+    # Start with an empty list to hold the scores we read.
+    scores = []
+
+    # 'try' lets us attempt something that might fail (a missing file).
+    try:
+        # 'with open(...)' safely opens the file and closes it for us.
+        # "r" means we are opening the file to READ it.
+        with open(SCORES_FILE, "r") as file:
+            # Loop through every line in the file, one at a time.
+            for line in file:
+                # .strip() removes the invisible newline at the end of a line.
+                clean_line = line.strip()
+
+                # Skip any blank lines so they do not cause errors.
+                if clean_line == "":
+                    continue
+
+                # Each line looks like "name,score". .split(",") breaks it
+                # into a list: "Alice,45" becomes ["Alice", "45"].
+                parts = clean_line.split(",")
+
+                # Only accept the line if it split into exactly two parts.
+                if len(parts) == 2:
+                    name = parts[0]
+                    # Scores are saved as text, so convert back to a number.
+                    # We use try/except in case the file was edited by hand.
+                    try:
+                        score = int(parts[1])
+                    except ValueError:
+                        # If the score is not a valid number, skip this line.
+                        continue
+
+                    # Add the score as a small dictionary to our list.
+                    scores.append({"name": name, "score": score})
+
+    except FileNotFoundError:
+        # The file does not exist yet (first run). Just return the empty list.
+        return scores
+
+    # Return the list of scores we collected.
+    return scores
+
+
+# ----------------------------------------------------------------------
+# FUNCTION: save a new score to the text file
+# ----------------------------------------------------------------------
+def save_score(name, score):
+    """
+    Add a player's name and score to the end of the scores file.
+
+    Parameters:
+        name (str): the player's name.
+        score (int): the player's final score.
+
+    We open the file in "a" (append) mode, which ADDS to the end of the
+    file without deleting what is already there.
+    """
+    # Open the file in append mode ("a"). If it does not exist, it is created.
+    with open(SCORES_FILE, "a") as file:
+        # Write one line in the "name,score" format, ending with a newline.
+        # str(score) converts the number to text so it can be written.
+        file.write(name + "," + str(score) + "\n")
+
+
+# ----------------------------------------------------------------------
+# FUNCTION: show the leaderboard (top scores)
+# ----------------------------------------------------------------------
+def show_leaderboard():
+    """
+    Display the highest scores, sorted from best to worst.
+
+    This function reads the saved scores, sorts them, and prints the
+    top few in a clean table-like layout.
+    """
+    # Load all saved scores from the file.
+    scores = load_scores()
+
+    print_line()
+    print("                 HIGH SCORE LEADERBOARD")
+    print_line()
+
+    # If there are no scores yet, tell the player and stop early.
+    if len(scores) == 0:
+        print("  No scores yet. Be the first to play and set a record!")
+        print_line()
+        input("  Press ENTER to return to the main menu... ")
+        return
+
+    # Sort the scores from highest to lowest.
+    # 'key' tells sort() to look at the "score" value inside each dictionary.
+    # 'reverse=True' means biggest first.
+    scores.sort(key=score_value, reverse=True)
+
+    # A counter for the ranking position (1st, 2nd, 3rd...).
+    rank = 1
+
+    # Loop through the sorted scores, but only up to TOP_SCORES_TO_SHOW.
+    for entry in scores:
+        # Stop once we have shown enough top scores.
+        if rank > TOP_SCORES_TO_SHOW:
+            break
+
+        # Build a neat line, e.g. "  1. Alice ............... 45"
+        # str(rank) is the position; entry["name"] and entry["score"] come
+        # from the dictionary we stored earlier.
+        position = str(rank) + "."
+        name = entry["name"]
+        points = str(entry["score"])
+
+        # ljust() pads the text with spaces so the numbers line up neatly.
+        print("  " + position.ljust(4) + name.ljust(20) + points)
+
+        # Move to the next ranking position.
+        rank = rank + 1
+
+    print_line()
+    input("  Press ENTER to return to the main menu... ")
+
+
+# ----------------------------------------------------------------------
+# HELPER FUNCTION: pull the score out of a score dictionary
+# ----------------------------------------------------------------------
+def score_value(entry):
+    """
+    Return the "score" value from a score dictionary.
+
+    Parameters:
+        entry (dict): a dictionary like {"name": "Alice", "score": 45}.
+
+    Returns:
+        int: the score number.
+
+    This tiny helper is used by sort() above so it knows which value to
+    sort the leaderboard by. Keeping it separate avoids more advanced
+    Python features and stays beginner-friendly.
+    """
+    return entry["score"]
+
+
+# ----------------------------------------------------------------------
 # FUNCTION: show the main menu and read the user's choice
 # ----------------------------------------------------------------------
 def show_main_menu():
@@ -111,7 +285,8 @@ def show_main_menu():
     Display the main menu and return the user's chosen option.
 
     Returns:
-        str: "1", "2" or "3" (Play, Rules, or Exit).
+        str: "1", "2", "3" or "4"
+             (Play, Rules, Leaderboard, or Exit).
 
     A 'while True' loop keeps asking until the user types a valid choice,
     so the program never crashes on unexpected input.
@@ -123,19 +298,20 @@ def show_main_menu():
         print_line()
         print("  1. Play Game")                        # menu option 1
         print("  2. Rules")                            # menu option 2
-        print("  3. Exit")                             # menu option 3
+        print("  3. Leaderboard")                      # menu option 3
+        print("  4. Exit")                             # menu option 4
         print_line()
 
         # input() always returns a string. .strip() removes any accidental
         # spaces the user typed before or after their choice.
-        choice = input("  Enter your choice (1-3): ").strip()
+        choice = input("  Enter your choice (1-4): ").strip()
 
-        # Check the choice against the three valid values.
-        if choice == "1" or choice == "2" or choice == "3":
+        # Check the choice against the four valid values.
+        if choice == "1" or choice == "2" or choice == "3" or choice == "4":
             return choice          # 'return' sends the value back and stops the loop
         else:
             # Invalid input: warn the user, then the loop repeats.
-            print("\n  >> Invalid choice. Please type 1, 2 or 3.\n")
+            print("\n  >> Invalid choice. Please type 1, 2, 3 or 4.\n")
 
 
 # ----------------------------------------------------------------------
@@ -159,6 +335,8 @@ def show_rules():
     print("  * 50:50 Lifeline:")
     print("        Type 'L' instead of an answer to remove TWO")
     print("        wrong options. You can use this ONCE per game.")
+    print()
+    print("  * Your final score is saved to the leaderboard!")
     print_line()
 
     # Pause so the user can read the rules before returning to the menu.
@@ -293,7 +471,8 @@ def ask_question(question_data, lifeline_available):
 def play_game():
     """
     Run a complete game: loop through every category and every question,
-    keep track of the score, and show a final result at the end.
+    keep track of the score, save the result to the leaderboard, and show
+    a final summary at the end.
     """
     score = 0                      # the player's running score
     lifeline_available = True      # the 50:50 can be used once; start as True
@@ -302,6 +481,12 @@ def play_game():
     print_line()
     print("                  STARTING THE QUIZ!")
     print_line()
+
+    # Ask for the player's name so we can save it to the leaderboard later.
+    player_name = input("  Enter your name: ").strip()
+    # If the player did not type anything, give them a default name.
+    if player_name == "":
+        player_name = "Anonymous"
 
     # Outer loop: go through each category in the question bank.
     # .items() gives us both the category name (key) and its questions (value).
@@ -336,7 +521,7 @@ def play_game():
     print_line()
     print("                  QUIZ COMPLETE!")
     print_line()
-    print("  Your final score is: " + str(score) + " points")
+    print("  " + player_name + ", your final score is: " + str(score) + " points")
 
     # A simple message based on how well the player did.
     if score >= 50:
@@ -348,6 +533,10 @@ def play_game():
     else:
         print("  Don't worry - try again to improve your score!")
     print_line()
+
+    # Save this player's score to the leaderboard file.
+    save_score(player_name, score)
+    print("  Your score has been saved to the leaderboard!")
 
     # Pause before returning to the main menu.
     input("  Press ENTER to return to the main menu... ")
@@ -375,6 +564,8 @@ def main():
         elif choice == "2":
             show_rules()           # display the rules
         elif choice == "3":
+            show_leaderboard()     # display the high scores
+        elif choice == "4":
             # Say goodbye and 'break' out of the while loop to end the program.
             print("\n  Thanks for playing. Goodbye!\n")
             break

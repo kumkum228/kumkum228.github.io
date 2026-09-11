@@ -1,0 +1,7 @@
+# Runtime file created by the quiz game to store high scores.
+# It is generated automatically on first play, so we do not track it.
+scores.txt
+
+# Python cache files
+__pycache__/
+*.pyc
