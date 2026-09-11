@@ -1,0 +1,440 @@
+<title>Quiz Game Study Guide</title>
+<meta name="description" content="A presentation study guide for the Trivia Quiz Game: nested dictionaries, the 50:50 lifeline, and likely tutor questions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --bg:        #f1edfb;
+    --surface:   #ffffff;
+    --surface-2: #f6f2ff;
+    --ink:       #241a45;
+    --muted:     #635879;
+    --line:      #e4dcf7;
+    --accent:    #6d3bf5;
+    --accent-ink:#ffffff;
+    --gold:      #b9820a;
+    --gold-bg:   #fbf1d9;
+    --good:      #16a06a;
+    --code-bg:   #f4f0fe;
+    --code-ink:  #4a2fb0;
+    --shadow:    0 18px 50px -28px rgba(60, 30, 120, .4);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:        #140f2c;
+      --surface:   #201a3e;
+      --surface-2: #2a2350;
+      --ink:       #f0ebff;
+      --muted:     #b0a5d2;
+      --line:      #352b5c;
+      --accent:    #b79bff;
+      --accent-ink:#1a1236;
+      --gold:      #ffcb5e;
+      --gold-bg:   #3a2e14;
+      --good:      #45d69f;
+      --code-bg:   #1a142f;
+      --code-ink:  #cbb8ff;
+      --shadow:    0 18px 50px -28px rgba(0,0,0,.7);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:        #140f2c;
+    --surface:   #201a3e;
+    --surface-2: #2a2350;
+    --ink:       #f0ebff;
+    --muted:     #b0a5d2;
+    --line:      #352b5c;
+    --accent:    #b79bff;
+    --accent-ink:#1a1236;
+    --gold:      #ffcb5e;
+    --gold-bg:   #3a2e14;
+    --good:      #45d69f;
+    --code-bg:   #1a142f;
+    --code-ink:  #cbb8ff;
+    --shadow:    0 18px 50px -28px rgba(0,0,0,.7);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Nunito", system-ui, sans-serif;
+    line-height: 1.62;
+    padding: 40px 16px 64px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  /* ---------- Header ---------- */
+  header {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 30px 30px 28px;
+    margin-bottom: 26px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: "";
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: .13em;
+    font-size: .72rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .kicker .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  header h1 {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 2.1rem;
+    font-weight: 800;
+    margin: 0 0 8px;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+  header p { margin: 0; color: var(--muted); font-size: 1.05rem; max-width: 60ch; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 10px;
+    margin-top: 18px;
+  }
+  .tag {
+    font-size: .8rem; font-weight: 700;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 5px 11px;
+    border-radius: 999px;
+  }
+
+  /* ---------- Section cards ---------- */
+  section {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 26px 28px 28px;
+    margin-bottom: 22px;
+  }
+  .sec-head {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 6px;
+  }
+  .sec-num {
+    flex: none;
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-radius: 12px;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+  }
+  h2 {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 22px 0 8px;
+    color: var(--ink);
+  }
+  p { margin: 12px 0; }
+  strong { font-weight: 800; }
+  .lead { color: var(--muted); margin-top: 4px; }
+
+  code.inline {
+    font-family: "JetBrains Mono", monospace;
+    font-size: .88em;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  /* ---------- Code blocks ---------- */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 14px 0;
+  }
+  pre code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: .84rem;
+    line-height: 1.7;
+    color: var(--ink);
+    white-space: pre;
+  }
+  .cmt { color: var(--muted); font-style: italic; }
+  .kw  { color: var(--accent); font-weight: 600; }
+  .str { color: var(--good); }
+
+  /* ---------- Callouts ---------- */
+  .note {
+    display: flex; gap: 13px;
+    background: var(--gold-bg);
+    border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 16px 0 4px;
+  }
+  .note .i { flex: none; font-size: 1.15rem; line-height: 1.4; }
+  .note p { margin: 0; font-size: .96rem; }
+  .note strong { color: var(--gold); }
+
+  /* ---------- Q&A blocks ---------- */
+  .qa { margin-top: 18px; }
+  .qa + .qa { border-top: 1px dashed var(--line); padding-top: 18px; }
+  .q {
+    display: flex; gap: 11px;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 700;
+    font-size: 1.06rem;
+    align-items: flex-start;
+  }
+  .q .badge {
+    flex: none;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--accent);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .05em;
+    padding: 3px 9px;
+    border-radius: 7px;
+    margin-top: 3px;
+  }
+  .a {
+    margin: 10px 0 0 0;
+    padding: 12px 15px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--good);
+    border-radius: 0 10px 10px 0;
+  }
+  .a .lbl {
+    display: block;
+    font-size: .72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--good);
+    margin-bottom: 4px;
+  }
+  .a p { margin: 0; }
+
+  ul.clean { margin: 10px 0; padding-left: 20px; }
+  ul.clean li { margin: 6px 0; }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: .85rem;
+    margin-top: 30px;
+  }
+
+  .toolbar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+  .icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 10px;
+    width: 40px; height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  .icon-btn:hover { color: var(--ink); }
+  .icon-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 440px) {
+    body { padding-top: 26px; }
+    header, section { padding-left: 20px; padding-right: 20px; }
+    header h1 { font-size: 1.7rem; }
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .toolbar { display: none; }
+    header, section { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle light or dark theme">◐</button>
+  </div>
+
+  <header>
+    <span class="kicker"><span class="dot"></span>Presentation Study Guide</span>
+    <h1>Trivia Quiz Game — Study Guide</h1>
+    <p>A quick revision sheet for presenting <code class="inline">quiz_game.py</code> to your tutor. Covers the two trickiest parts of the code, plus likely questions and simple answers.</p>
+    <div class="meta">
+      <span class="tag">Python Basics</span>
+      <span class="tag">Glasgow Clyde College</span>
+      <span class="tag">Nested dictionaries</span>
+      <span class="tag">50:50 lifeline</span>
+      <span class="tag">File I/O</span>
+    </div>
+  </header>
+
+  <!-- ============ SECTION 1 ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num" aria-hidden="true">1</div>
+      <h2>The Question Bank (Nested Dictionary)</h2>
+    </div>
+    <p class="lead">This is the "database" of the game — no external files needed to hold the questions.</p>
+
+    <p>A <strong>nested dictionary</strong> means a dictionary whose values are themselves other collections. In this project the layers are:</p>
+    <ul class="clean">
+      <li>The outer <strong>dictionary</strong> — its <em>keys</em> are the two category names.</li>
+      <li>Each value is a <strong>list</strong> of questions.</li>
+      <li>Each question is a small <strong>dictionary</strong> with three keys: <code class="inline">question</code>, <code class="inline">options</code>, and <code class="inline">answer</code>.</li>
+    </ul>
+
+<pre><code><span class="kw">QUESTION_BANK</span> = {
+    <span class="str">"Python Basics"</span>: [                      <span class="cmt"># a category (a list)</span>
+        {                                       <span class="cmt"># one question (a dictionary)</span>
+            <span class="str">"question"</span>: <span class="str">"Which keyword makes a function?"</span>,
+            <span class="str">"options"</span>:  [<span class="str">"func"</span>, <span class="str">"def"</span>, <span class="str">"function"</span>, <span class="str">"define"</span>],
+            <span class="str">"answer"</span>:   <span class="str">"def"</span>
+        },
+        <span class="cmt"># ...more questions...</span>
+    ],
+    <span class="str">"General Knowledge"</span>: [ <span class="cmt"># ...second category... </span> ]
+}</code></pre>
+
+    <h3>How the code reads it</h3>
+    <p>Two loops walk through the structure — an outer loop for categories, an inner loop for the questions inside each one:</p>
+<pre><code><span class="kw">for</span> category_name, questions <span class="kw">in</span> QUESTION_BANK.items():   <span class="cmt"># each category</span>
+    <span class="kw">for</span> question_data <span class="kw">in</span> questions:                     <span class="cmt"># each question in it</span>
+        ask_question(question_data, lifeline_available)</code></pre>
+
+    <p>To read one value we use its key, e.g. <code class="inline">question_data["answer"]</code> gives <code class="inline">"def"</code>.</p>
+
+    <div class="note">
+      <span class="i">💡</span>
+      <p><strong>Why store the answer as text, not a number?</strong> We save <code class="inline">"answer": "def"</code> (the actual word) instead of <code class="inline">"answer": 2</code>. Checking is then just <code class="inline">chosen_option == correct_answer</code> — easy to read, and it never breaks even if the options are reordered.</p>
+    </div>
+  </section>
+
+  <!-- ============ SECTION 2 ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num" aria-hidden="true">2</div>
+      <h2>The 50:50 Lifeline Logic</h2>
+    </div>
+    <p class="lead">Remove two wrong options — but only once in the whole game.</p>
+
+    <p>Two ideas work together here: a <strong>flag</strong> that remembers if the lifeline is still available, and a <strong>helper function</strong> that builds the shorter list of options.</p>
+
+    <h3>Step 1 — A flag remembers "used or not"</h3>
+    <p>A single <code class="inline">True/False</code> variable, <code class="inline">lifeline_available</code>, starts as <code class="inline">True</code>. The moment the player uses it, we set it to <code class="inline">False</code>, so it can never be used again.</p>
+
+    <h3>Step 2 — Build a shorter options list</h3>
+    <p>The helper keeps the correct answer and adds just <em>one</em> wrong option — so two wrong ones disappear:</p>
+<pre><code><span class="kw">def</span> <span class="kw">use_fifty_fifty</span>(options, correct_answer):
+    reduced = [correct_answer]              <span class="cmt"># always keep the right one</span>
+    <span class="kw">for</span> option <span class="kw">in</span> options:
+        <span class="kw">if</span> option != correct_answer <span class="kw">and</span> len(reduced) &lt; 2:
+            reduced.append(option)         <span class="cmt"># add ONE wrong option</span>
+    <span class="kw">return</span> reduced                         <span class="cmt"># list of 2 options</span></code></pre>
+
+    <h3>Step 3 — Only allow it when available</h3>
+    <p>When the player types <code class="inline">L</code>, the code checks the flag first:</p>
+<pre><code><span class="kw">if</span> user_input == <span class="str">"L"</span>:
+    <span class="kw">if</span> lifeline_available:
+        options = use_fifty_fifty(options, correct_answer)
+        lifeline_available = <span class="kw">False</span>      <span class="cmt"># used up — lock it</span>
+    <span class="kw">else</span>:
+        print(<span class="str">"You have already used your 50:50!"</span>)</code></pre>
+
+    <div class="note">
+      <span class="i">🔑</span>
+      <p><strong>One sentence to remember:</strong> "A <strong>Boolean flag</strong> tracks whether the lifeline is still available, and a helper function returns a new list with only the correct answer plus one wrong option."</p>
+    </div>
+  </section>
+
+  <!-- ============ SECTION 3 ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num" aria-hidden="true">3</div>
+      <h2>Questions Iian Might Ask (with answers)</h2>
+    </div>
+    <p class="lead">Read these out loud once or twice — simple, confident answers.</p>
+
+    <div class="qa">
+      <div class="q"><span class="badge">Q1</span><span>"Why did you break the program into so many functions instead of writing it all in one place?"</span></div>
+      <div class="a">
+        <span class="lbl">How to answer</span>
+        <p>"To keep it organised and reusable. Each function does one job — <code class="inline">ask_question()</code> asks a question, <code class="inline">show_leaderboard()</code> shows scores. It's easier to read, easier to fix, and I can test one part without breaking the rest."</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><span class="badge">Q2</span><span>"What happens the very first time someone runs the game, before <code class="inline">scores.txt</code> exists?"</span></div>
+      <div class="a">
+        <span class="lbl">How to answer</span>
+        <p>"It won't crash. I used <code class="inline">try / except FileNotFoundError</code> around the file reading. If the file isn't there yet, the code catches that and just returns an empty list, so the leaderboard simply says 'No scores yet.'"</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="q"><span class="badge">Q3</span><span>"How does your code stop the game from crashing when a user types something invalid, like a letter or the number 9?"</span></div>
+      <div class="a">
+        <span class="lbl">How to answer</span>
+        <p>"I used a <code class="inline">while True</code> loop that keeps asking until the input is valid. I check <code class="inline">.isdigit()</code> to make sure it's a number, and then check it's between 1 and the number of options. Anything else prints 'Invalid input' and loops back — it never accepts bad data."</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="i">🎤</span>
+      <p><strong>Bonus tip:</strong> If asked "what would you add next?", say something honest and simple — like <em>"a timer for each question"</em> or <em>"more categories"</em>. It shows you understand the code well enough to extend it.</p>
+    </div>
+  </section>
+
+  <footer>
+    Study guide for <code class="inline">quiz_game.py</code> · Tip: press <strong>Ctrl&nbsp;+&nbsp;P</strong> to save this as a PDF or print it.
+  </footer>
+</div>
+
+<script>
+  "use strict";
+  // Theme toggle — flips light/dark and remembers the choice in this browser.
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem("studyGuideTheme"); } catch (e) {}
+    if (saved) document.documentElement.setAttribute("data-theme", saved);
+
+    document.getElementById("themeBtn").addEventListener("click", function () {
+      var root = document.documentElement;
+      var isDark = root.getAttribute("data-theme") === "dark" ||
+        (!root.hasAttribute("data-theme") &&
+         window.matchMedia("(prefers-color-scheme: dark)").matches);
+      var next = isDark ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("studyGuideTheme", next); } catch (e) {}
+    });
+  })();
+</script>
