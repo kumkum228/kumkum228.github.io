@@ -482,12 +482,6 @@ def play_game():
     print("                  STARTING THE QUIZ!")
     print_line()
 
-    # Ask for the player's name so we can save it to the leaderboard later.
-    player_name = input("  Enter your name: ").strip()
-    # If the player did not type anything, give them a default name.
-    if player_name == "":
-        player_name = "Anonymous"
-
     # Outer loop: go through each category in the question bank.
     # .items() gives us both the category name (key) and its questions (value).
     for category_name, questions in QUESTION_BANK.items():
@@ -521,7 +515,7 @@ def play_game():
     print_line()
     print("                  QUIZ COMPLETE!")
     print_line()
-    print("  " + player_name + ", your final score is: " + str(score) + " points")
+    print("  Your final score is: " + str(score) + " points")
 
     # A simple message based on how well the player did.
     if score >= 50:
@@ -534,9 +528,16 @@ def play_game():
         print("  Don't worry - try again to improve your score!")
     print_line()
 
-    # Save this player's score to the leaderboard file.
+    # Now that the game is over, ask for the player's name so we can save
+    # their result to the high score leaderboard.
+    player_name = input("  Enter your name for the leaderboard: ").strip()
+    # If the player did not type anything, give them a default name.
+    if player_name == "":
+        player_name = "Anonymous"
+
+    # Save this player's name and score to the leaderboard file (scores.txt).
     save_score(player_name, score)
-    print("  Your score has been saved to the leaderboard!")
+    print("  Thanks, " + player_name + "! Your score has been saved.")
 
     # Pause before returning to the main menu.
     input("  Press ENTER to return to the main menu... ")
